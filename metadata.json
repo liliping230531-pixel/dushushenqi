@@ -1,0 +1,5 @@
+{
+  "name": "读书神器 (Reading Artifact)",
+  "description": "An AI-powered book analysis tool offering summaries, mind maps, bilingual reading, and podcast generation using Gemini 2.5.",
+  "requestFramePermissions": []
+}
