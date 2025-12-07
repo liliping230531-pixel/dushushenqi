@@ -8,17 +8,19 @@ import {
   VocabItem, 
   BilingualSegment, 
   ReviewStyle,
-  PodcastScriptLine,
-  SummarySection
+  PodcastScriptLine, 
+  SummarySection,
+  ThemeConfig
 } from '../types';
 import { 
   generateSummary, 
   generateBilingual, 
-  generateGoldenSentences,
+  generateGoldenSentences, 
   generateExercises,
   generateQA,
   generateVocabulary,
   generateActionPlan,
+  generateBeginnerGuide,
   generateReview,
   generatePodcastScript,
   generateTTS
@@ -44,36 +46,64 @@ import {
   Download,
   Palette,
   Mic,
-  Zap
+  Zap,
+  BookOpen,
+  Baby // Imported for Beginner Guide (icon used in Sidebar but referenced here for consistency if needed, though view icon is prop)
 } from 'lucide-react';
 
-// Classical Ink Lotus for Card Mark
-const InkLotusMark = ({ size = 24, className = "" }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
-    <path d="M12 21c-2-3-4-7-4-10 0-4 2-7 4-7s4 3 4 7c0 3-2 7-4 10z" opacity="0.8"/>
-    <path d="M12 21c-4-2-7-6-7-10 0-2 1-4 3-4 1 0 3 2 4 4" opacity="0.6"/>
-    <path d="M12 21c4-2 7-6 7-10 0-2-1-4-3-4-1 0-3 2-4 4" opacity="0.6"/>
-  </svg>
+// --- Visual Components ---
+
+// Enhanced Floral Pattern Component for Cards
+const FloralPatterns = ({ className = "" }) => (
+    <div className={`absolute inset-0 pointer-events-none overflow-hidden rounded-xl ${className}`}>
+        {/* Top Left Vine & Leaves */}
+        <svg className="absolute top-0 left-0 w-64 h-64 opacity-20 text-current transform -translate-x-12 -translate-y-12" viewBox="0 0 200 200" fill="currentColor">
+             <path d="M50,150 Q50,50 150,50" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+             <path d="M150,50 Q180,50 190,20" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+             <circle cx="50" cy="150" r="3" />
+             <path d="M50,100 Q30,120 20,140" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+             <ellipse cx="20" cy="140" rx="4" ry="8" transform="rotate(-30 20 140)"/>
+             <path d="M100,50 Q120,30 140,20" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+             <ellipse cx="140" cy="20" rx="4" ry="8" transform="rotate(60 140 20)"/>
+             <path d="M80,50 C60,50 50,60 40,80" fill="none" stroke="currentColor" strokeWidth="0.5" strokeDasharray="2 2"/>
+        </svg>
+        
+        {/* Bottom Right Lush Leaves */}
+        <svg className="absolute bottom-0 right-0 w-80 h-80 opacity-15 text-current transform translate-x-16 translate-y-16 rotate-180" viewBox="0 0 300 300" fill="currentColor">
+             <path d="M150,300 C150,200 200,150 300,150" fill="none" stroke="currentColor" strokeWidth="2"/>
+             <path d="M150,300 Q120,250 100,280" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+             <ellipse cx="100" cy="280" rx="12" ry="24" transform="rotate(-20 100 280)"/>
+             <path d="M200,200 Q230,180 260,190" fill="none" stroke="currentColor" strokeWidth="0.5"/>
+             <ellipse cx="260" cy="190" rx="12" ry="24" transform="rotate(80 260 190)"/>
+             <circle cx="300" cy="150" r="4" />
+             <circle cx="180" cy="220" r="2" />
+             <circle cx="220" cy="180" r="3" />
+        </svg>
+
+        {/* Decorative Border Frame */}
+        <div className="absolute inset-4 border border-current opacity-20 rounded-lg"></div>
+        <div className="absolute inset-6 border border-current opacity-10 rounded-lg"></div>
+    </div>
 );
 
-// --- Helper: Simple Markdown Renderer ---
-const SimpleMarkdown = ({ text }: { text: string }) => {
+// Helper: Simple Markdown Renderer
+const SimpleMarkdown = ({ text, theme }: { text: string, theme: ThemeConfig }) => {
     if (!text) return null;
     return (
-        <div className="prose prose-stone prose-lg max-w-none text-[#2C2C2C] leading-loose font-serif">
+        <div className={`prose max-w-none ${theme.textMain} leading-loose ${theme.fontMain}`}>
             {text.split('\n').map((line, i) => {
                 const cleanLine = line.trim();
                 if (!cleanLine) return <br key={i}/>;
                 
-                if (cleanLine.startsWith('###')) return <h3 key={i} className="text-xl font-bold mt-8 mb-4 text-[#463F3A] tracking-tight border-l-4 border-[#984B43] pl-3">{cleanLine.replace(/^###\s*/, '')}</h3>;
-                if (cleanLine.startsWith('##')) return <h2 key={i} className="text-2xl font-bold mt-10 mb-5 text-[#2C2C2C] border-b border-[#D1C0A5] pb-2">{cleanLine.replace(/^##\s*/, '')}</h2>;
-                if (cleanLine.startsWith('#')) return <h1 key={i} className="text-3xl font-black mt-12 mb-8 text-[#2C2C2C]">{cleanLine.replace(/^#\s*/, '')}</h1>;
+                if (cleanLine.startsWith('###')) return <h3 key={i} className={`text-xl font-bold mt-8 mb-4 ${theme.textSecondary} tracking-tight border-l-4 pl-3 border-current`}>{cleanLine.replace(/^###\s*/, '')}</h3>;
+                if (cleanLine.startsWith('##')) return <h2 key={i} className={`text-2xl font-bold mt-10 mb-5 ${theme.textMain} border-b ${theme.border} pb-2`}>{cleanLine.replace(/^##\s*/, '')}</h2>;
+                if (cleanLine.startsWith('#')) return <h1 key={i} className={`text-3xl font-black mt-12 mb-8 ${theme.textMain}`}>{cleanLine.replace(/^#\s*/, '')}</h1>;
                 
                 if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
                     return (
                         <div key={i} className="flex gap-4 ml-2 mb-3 items-start group">
-                            <span className="text-[#984B43] mt-2 w-1.5 h-1.5 rounded-full bg-[#984B43] shrink-0"></span>
-                            <span className="text-[#463F3A]">{cleanLine.replace(/^[-*]\s*/, '')}</span>
+                            <span className={`mt-2 w-1.5 h-1.5 rounded-full ${theme.id === 'cyber' ? 'bg-[#00F0FF]' : 'bg-current'} shrink-0 text-current opacity-60`}></span>
+                            <span className="opacity-90">{cleanLine.replace(/^[-*]\s*/, '')}</span>
                         </div>
                     );
                 }
@@ -83,7 +113,7 @@ const SimpleMarkdown = ({ text }: { text: string }) => {
                     <p key={i} className="mb-5 text-justify">
                         {parts.map((part, idx) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
-                                return <strong key={idx} className="text-[#984B43] font-bold bg-[#EBE5CE]/50 px-1 rounded">{part.slice(2, -2)}</strong>;
+                                return <strong key={idx} className={`font-bold ${theme.accent} opacity-90 px-1 rounded`}>{part.slice(2, -2)}</strong>;
                             }
                             return part;
                         })}
@@ -102,7 +132,8 @@ const FeatureWrapper = ({
   loading, 
   onRefresh, 
   onCopy,
-  extraActions 
+  extraActions,
+  theme
 }: { 
   title: string; 
   icon?: React.ElementType;
@@ -111,6 +142,7 @@ const FeatureWrapper = ({
   onRefresh?: () => void;
   onCopy?: () => void;
   extraActions?: React.ReactNode;
+  theme: ThemeConfig;
 }) => {
   const [copied, setCopied] = useState(false);
 
@@ -124,15 +156,15 @@ const FeatureWrapper = ({
 
   return (
     <div className="flex flex-col h-full w-full">
-      {/* Header Bar - Classical Minimal */}
-      <div className="flex items-center justify-between px-10 py-6 shrink-0 bg-[#F7F5F0] border-b border-[#EBE5CE]">
+      {/* Header Bar */}
+      <div className={`flex items-center justify-between px-10 py-6 shrink-0 ${theme.bgCard} border-b ${theme.border}`}>
         <div className="flex items-center gap-4">
             {Icon && (
-              <div className="text-[#984B43]">
+              <div className={`${theme.accent}`}>
                 <Icon size={24} strokeWidth={2}/>
               </div>
             )}
-            <h2 className="text-2xl font-serif font-bold text-[#2C2C2C] tracking-widest">{title}</h2>
+            <h2 className={`text-2xl font-bold ${theme.textMain} tracking-widest`}>{title}</h2>
         </div>
         <div className="flex gap-3 items-center">
           {extraActions}
@@ -140,7 +172,7 @@ const FeatureWrapper = ({
             <button 
               onClick={onRefresh} 
               disabled={loading}
-              className="group w-10 h-10 flex items-center justify-center bg-[#FDFCF8] rounded-full border border-[#D1C0A5] text-[#7A7067] hover:text-[#984B43] hover:border-[#984B43] transition-all disabled:opacity-50"
+              className={`group w-10 h-10 flex items-center justify-center ${theme.bgBody} rounded-full border ${theme.border} ${theme.textSecondary} hover:text-current hover:border-current transition-all disabled:opacity-50`}
               title="刷新"
             >
               <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
@@ -149,7 +181,7 @@ const FeatureWrapper = ({
           {onCopy && (
             <button 
               onClick={handleCopy} 
-              className="w-10 h-10 flex items-center justify-center bg-[#FDFCF8] rounded-full border border-[#D1C0A5] text-[#7A7067] hover:text-[#984B43] hover:border-[#984B43] transition-all"
+              className={`w-10 h-10 flex items-center justify-center ${theme.bgBody} rounded-full border ${theme.border} ${theme.textSecondary} hover:text-current hover:border-current transition-all`}
               title="复制"
             >
               {copied ? <Check size={16} /> : <Copy size={16} />}
@@ -159,15 +191,15 @@ const FeatureWrapper = ({
       </div>
 
       {/* Content Area */}
-      <div className="flex-1 overflow-y-auto px-10 pb-20 custom-scrollbar relative bg-[#FDFCF8]">
+      <div className={`flex-1 overflow-y-auto px-10 pb-20 custom-scrollbar relative ${theme.bgPanel}`}>
         {loading ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#FDFCF8]/80 z-20 backdrop-blur-sm">
+          <div className={`absolute inset-0 flex items-center justify-center ${theme.bgPanel}/80 z-20 backdrop-blur-sm`}>
             <div className="flex flex-col items-center gap-6">
               <div className="relative">
-                <div className="w-16 h-16 border-4 border-[#D1C0A5] border-t-[#984B43] rounded-full animate-spin"></div>
+                <div className={`w-16 h-16 border-4 ${theme.border} border-t-current rounded-full animate-spin ${theme.textSecondary}`}></div>
               </div>
               <div className="text-center">
-                 <p className="text-lg font-serif font-bold text-[#2C2C2C] tracking-widest">正在研读...</p>
+                 <p className={`text-lg font-bold ${theme.textMain} tracking-widest`}>AI 正在研读...</p>
               </div>
             </div>
           </div>
@@ -178,7 +210,7 @@ const FeatureWrapper = ({
 };
 
 // --- 1. Summary View ---
-export const SummaryView = ({ apiKey, text, dataZh, dataEn, onUpdate }: { apiKey: string, text: string, dataZh: SummarySection[] | null, dataEn: SummarySection[] | null, onUpdate: (d: SummarySection[], lang: 'zh' | 'en') => void }) => {
+export const SummaryView = ({ apiKey, text, dataZh, dataEn, onUpdate, theme }: { apiKey: string, text: string, dataZh: SummarySection[] | null, dataEn: SummarySection[] | null, onUpdate: (d: SummarySection[], lang: 'zh' | 'en') => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState<'zh' | 'en'>('zh');
 
@@ -191,13 +223,19 @@ export const SummaryView = ({ apiKey, text, dataZh, dataEn, onUpdate }: { apiKey
   };
 
   const LangToggle = (
-    <div className="flex bg-[#EBE5CE] rounded-lg p-1">
-        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'zh' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>中文</button>
-        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'en' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>EN</button>
+    <div className={`flex ${theme.bgBody} rounded-lg p-1 border ${theme.border}`}>
+        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'zh' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>中文</button>
+        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'en' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>EN</button>
     </div>
   );
 
   const displayData = lang === 'zh' ? dataZh : dataEn;
+  
+  const handleCopy = () => {
+      if(!displayData) return;
+      const text = displayData.map(s => `## ${s.title}\n${s.content}`).join('\n\n');
+      navigator.clipboard.writeText(text);
+  };
 
   return (
     <FeatureWrapper 
@@ -205,30 +243,32 @@ export const SummaryView = ({ apiKey, text, dataZh, dataEn, onUpdate }: { apiKey
       icon={Feather}
       loading={loading} 
       onRefresh={fetchSummary}
+      onCopy={handleCopy}
       extraActions={LangToggle}
+      theme={theme}
     >
       <div className="max-w-6xl mx-auto py-8">
           {!displayData || displayData.length === 0 ? (
-             <div className="text-[#B0A496] italic font-serif text-center py-20">正在生成...</div>
+             <div className={`${theme.textSecondary} italic text-center py-20 opacity-60`}>正在生成...</div>
           ) : (
              <div className="space-y-8">
                 {displayData.map((section, idx) => (
                     <div 
                       key={idx} 
-                      className="group bg-[#F7F5F0] rounded-xl border border-[#D1C0A5] shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col md:flex-row"
+                      className={`group ${theme.bgCard} ${theme.radius} border ${theme.border} shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden flex flex-col md:flex-row`}
                     >
                         {/* Left: Title & Number */}
-                        <div className="md:w-1/4 bg-[#EBE5CE] p-8 border-b md:border-b-0 md:border-r border-[#D1C0A5] flex flex-col justify-center relative">
-                            <div className="absolute top-4 left-6 text-6xl font-black text-[#D1C0A5]/40 font-serif select-none">
+                        <div className={`md:w-1/4 ${theme.bgBody} p-8 border-b md:border-b-0 md:border-r ${theme.border} flex flex-col justify-center relative`}>
+                            <div className={`absolute top-4 left-6 text-6xl font-black ${theme.textSecondary} opacity-10 select-none`}>
                                 {String(idx + 1).padStart(2, '0')}
                             </div>
-                            <h3 className="text-xl font-bold text-[#2C2C2C] font-serif leading-tight relative z-10 mt-4">
+                            <h3 className={`text-xl font-bold ${theme.textMain} leading-tight relative z-10 mt-4`}>
                                 {section.title}
                             </h3>
                         </div>
 
                         {/* Right: Content */}
-                        <div className="flex-1 p-8 text-[#2C2C2C] leading-loose text-lg text-justify font-serif">
+                        <div className={`flex-1 p-8 ${theme.textMain} leading-loose text-lg text-justify`}>
                             {section.content}
                         </div>
                     </div>
@@ -242,12 +282,21 @@ export const SummaryView = ({ apiKey, text, dataZh, dataEn, onUpdate }: { apiKey
 
 
 // --- 3. Bilingual Reading ---
-export const BilingualView = ({ apiKey, text, data, onUpdate }: { apiKey: string, text: string, data: BilingualSegment[], onUpdate: (d: BilingualSegment[]) => void }) => {
+export const BilingualView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: BilingualSegment[], onUpdate: (d: BilingualSegment[]) => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
   const [loadingAudioId, setLoadingAudioId] = useState<number | null>(null);
   const [playingIndex, setPlayingIndex] = useState<number | null>(null);
   const [chunkIndex, setChunkIndex] = useState(0);
-  const CHUNK_SIZE = 2500;
+  const CHUNK_SIZE = 2000;
+  const activeRef = useRef<HTMLDivElement>(null);
+  const audioControllerRef = useRef<AudioController | null>(null);
+
+  useEffect(() => {
+    // Clean up audio on unmount
+    return () => {
+      audioControllerRef.current?.stop();
+    };
+  }, []);
 
   const fetchChunk = async (idx: number, append: boolean = false) => {
     setLoading(true);
@@ -270,15 +319,30 @@ export const BilingualView = ({ apiKey, text, data, onUpdate }: { apiKey: string
   };
 
   const handlePlay = async (text: string, index: number) => {
-    if (loadingAudioId !== null || playingIndex !== null) return;
+    // Stop current audio if playing
+    if (audioControllerRef.current) {
+        audioControllerRef.current.stop();
+        audioControllerRef.current = null;
+        setPlayingIndex(null);
+    }
+
+    // Toggle off if clicking same
+    if (playingIndex === index) {
+        return;
+    }
+
     setLoadingAudioId(index);
     try {
         const audioData = await generateTTS(apiKey, text, 'Kore');
         if (audioData) {
           setLoadingAudioId(null);
           setPlayingIndex(index);
-          await playPcmAudio(audioData).promise;
-          setPlayingIndex(null);
+          const controller = playPcmAudio(audioData);
+          audioControllerRef.current = controller;
+          await controller.promise;
+          // Only clear if we are still the playing index (didn't switch)
+          setPlayingIndex((prev) => prev === index ? null : prev);
+          audioControllerRef.current = null;
         } else {
           setLoadingAudioId(null);
         }
@@ -289,55 +353,77 @@ export const BilingualView = ({ apiKey, text, data, onUpdate }: { apiKey: string
     }
   };
 
+  useEffect(() => {
+    if (playingIndex !== null && activeRef.current) {
+        activeRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+  }, [playingIndex]);
+  
+  const handleCopy = () => {
+      const txt = data.map(s => `${s.original}\n${s.translation}`).join('\n\n');
+      navigator.clipboard.writeText(txt);
+  };
+
   return (
-    <FeatureWrapper title="沉浸双语" icon={GraduationCap} loading={loading} onRefresh={() => { setChunkIndex(0); fetchChunk(0, false); }}>
+    <FeatureWrapper 
+        title="沉浸双语" 
+        icon={GraduationCap} 
+        loading={loading} 
+        onRefresh={() => { setChunkIndex(0); fetchChunk(0, false); }} 
+        onCopy={handleCopy}
+        theme={theme}
+    >
       <div className="space-y-6 max-w-[1600px] mx-auto py-6">
         {data.map((seg, i) => {
           const isPlaying = playingIndex === i;
           const isLoading = loadingAudioId === i;
           return (
-            <div key={i} className={`flex flex-col xl:flex-row gap-6 items-stretch transition-all duration-700 ${isPlaying ? 'opacity-100' : 'opacity-90 hover:opacity-100'}`}>
+            <div 
+                key={i} 
+                ref={isPlaying ? activeRef : null}
+                className={`flex flex-col xl:flex-row gap-6 items-stretch transition-all duration-700 ${isPlaying ? 'opacity-100 scale-[1.02]' : 'opacity-90 hover:opacity-100 hover:scale-[1.01]'}`}
+            >
                
                {/* English/Original */}
-               <div className={`flex-1 p-8 rounded-lg border relative transition-all duration-500 group ${isPlaying ? 'bg-[#2C2C2C] border-[#2C2C2C] shadow-lg text-[#F7F5F0]' : 'bg-[#F7F5F0] border-[#EBE5CE] shadow-sm text-[#463F3A]'}`}>
+               <div className={`flex-1 p-8 rounded-lg border relative transition-all duration-500 group ${isPlaying ? `${theme.buttonStyle} border-transparent shadow-xl ring-2 ring-offset-4 ring-offset-[${theme.bgPanel}] ring-current` : `${theme.bgCard} ${theme.border} shadow-sm ${theme.textMain}`}`}>
                   <div className="flex justify-between items-start mb-4">
                       <div className="text-xs font-bold tracking-[0.2em] uppercase opacity-50">Original</div>
                       <button 
                           onClick={() => handlePlay(seg.original, i)}
-                          className={`p-2 rounded-full transition-all duration-300 ${isPlaying ? 'bg-[#F7F5F0] text-[#2C2C2C]' : 'text-[#B0A496] hover:text-[#984B43]'}`}
+                          className={`p-2 rounded-full transition-all duration-300 ${isPlaying ? 'bg-white/20 text-white animate-pulse' : `${theme.textSecondary} hover:text-current hover:bg-black/5`}`}
                       >
-                          {isLoading ? <Loader2 size={16} className="animate-spin" /> : <Volume2 size={16} />}
+                          {isLoading ? <Loader2 size={16} className="animate-spin" /> : isPlaying ? <Pause size={16} className="fill-current"/> : <Volume2 size={16} />}
                       </button>
                   </div>
-                  <p className="leading-[1.8] text-lg font-serif text-justify">
+                  <p className="leading-[1.8] text-lg text-justify">
                       {seg.original}
                   </p>
                </div>
                
                {/* Chinese/Translation */}
-               <div className={`flex-1 p-8 rounded-lg border relative transition-all duration-500 ${isPlaying ? 'bg-[#EBE5CE] border-[#D1C0A5]' : 'bg-[#FDFCF8] border-[#EBE5CE] shadow-sm'}`}>
+               <div className={`flex-1 p-8 rounded-lg border relative transition-all duration-500 ${isPlaying ? `${theme.bgBody} ${theme.border} ring-1 ring-current/20` : `${theme.bgPanel} border-transparent shadow-sm`}`}>
                    <div className="mb-4">
-                      <div className="text-xs font-bold tracking-[0.2em] uppercase text-[#984B43] opacity-60">Translation</div>
+                      <div className={`text-xs font-bold tracking-[0.2em] uppercase ${theme.textSecondary} opacity-80`}>Translation</div>
                    </div>
-                   <p className="leading-[1.8] text-lg font-serif text-justify text-[#2C2C2C]">
+                   <p className={`leading-[1.8] text-lg text-justify ${theme.textMain}`}>
                       {seg.translation}
                    </p>
                </div>
             </div>
           );
         })}
-        {data.length === 0 && <div className="text-center text-[#B0A496] py-10 font-serif">暂无内容，请刷新生成。</div>}
+        {data.length === 0 && <div className={`text-center ${theme.textSecondary} py-10 opacity-60`}>暂无内容，请刷新生成。</div>}
       </div>
       
       {text.length > (chunkIndex + 1) * CHUNK_SIZE && (
-          <div className="mt-8 flex justify-center pb-8">
+          <div className="mt-12 flex justify-center pb-12">
             <button 
                 onClick={loadMore}
                 disabled={loading}
-                className="group flex items-center gap-3 px-8 py-3 bg-[#F7F5F0] text-[#463F3A] font-bold font-serif rounded-full shadow border border-[#D1C0A5] hover:border-[#984B43]"
+                className={`group flex items-center gap-3 px-10 py-4 ${theme.buttonStyle} ${theme.radius} font-bold shadow-lg hover:scale-105 transition-all`}
             >
-                {loading ? <RefreshCw size={18} className="animate-spin"/> : <ArrowDown size={18} />}
-                生成下一章内容
+                {loading ? <RefreshCw size={20} className="animate-spin"/> : <BookOpen size={20} />}
+                生成下一章
             </button>
           </div>
       )}
@@ -345,56 +431,53 @@ export const BilingualView = ({ apiKey, text, data, onUpdate }: { apiKey: string
   );
 };
 
-// --- 4. Golden Sentences (Updated: Classical Themes) ---
+// --- 4. Golden Sentences (Rich Colors, Floral, No "Reading Artifact") ---
 
-const CARD_THEMES = [
+// Updated Theme Colors for Golden Cards - BRIGHTER & VIBRANT
+const RICH_CARD_THEMES = [
   {
-    id: 'ink-classic',
-    name: "Ink Classic",
-    bgClass: "bg-[#F7F5F0] text-[#2C2C2C]",
-    bgElement: (
-       <>
-        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/rice-paper.png')] opacity-50"></div>
-        <div className="absolute top-4 left-4 w-16 h-16 border-t-4 border-l-4 border-[#2C2C2C]"></div>
-        <div className="absolute bottom-4 right-4 w-16 h-16 border-b-4 border-r-4 border-[#2C2C2C]"></div>
-       </>
-    ),
-    containerStyle: "font-serif",
-    quoteStyle: "text-3xl leading-relaxed font-bold text-[#2C2C2C]",
-    transStyle: "text-[#5D7265] mt-8 text-sm tracking-widest font-serif",
-    accentColor: "text-[#984B43]"
+    id: 'sunset-glow',
+    bgClass: "bg-gradient-to-br from-[#FF9A9E] to-[#FECFEF]",
+    textClass: "text-[#5D5C61]",
+    accentClass: "text-white",
+    subtextClass: "text-[#5D5C61]/80",
+    darkText: true
   },
   {
-    id: 'cinnabar-seal',
-    name: "Cinnabar",
-    bgClass: "bg-[#984B43] text-[#F7F5F0]",
-    bgElement: (
-        <>
-           <div className="absolute inset-0 border-8 border-[#F7F5F0]/20 m-4"></div>
-        </>
-    ),
-    containerStyle: "font-serif",
-    quoteStyle: "text-3xl leading-relaxed font-bold text-[#F7F5F0]",
-    transStyle: "text-[#EBE5CE] mt-8 text-sm tracking-widest font-serif opacity-80",
-    accentColor: "text-[#F7F5F0]"
+    id: 'ocean-breeze',
+    bgClass: "bg-gradient-to-br from-[#84fab0] to-[#8fd3f4]",
+    textClass: "text-[#005C97]",
+    accentClass: "text-white",
+    subtextClass: "text-[#005C97]/80",
+    darkText: true
   },
   {
-    id: 'bamboo-forest',
-    name: "Bamboo",
-    bgClass: "bg-[#5D7265] text-[#F7F5F0]",
-    bgElement: (
-        <>
-            <div className="absolute right-[-20%] top-0 h-full w-1/2 bg-[#4A5D52] skew-x-12 opacity-50"></div>
-        </>
-    ),
-    containerStyle: "font-serif",
-    quoteStyle: "text-3xl font-bold leading-relaxed tracking-wide text-[#F7F5F0]",
-    transStyle: "text-[#D1C0A5] mt-8 text-sm tracking-widest font-serif",
-    accentColor: "text-[#D1C0A5]"
+    id: 'lavender-dream',
+    bgClass: "bg-gradient-to-br from-[#a18cd1] to-[#fbc2eb]",
+    textClass: "text-white",
+    accentClass: "text-[#FFF0F5]",
+    subtextClass: "text-white/80",
+    darkText: false
+  },
+  {
+    id: 'morning-mist',
+    bgClass: "bg-gradient-to-br from-[#cfd9df] to-[#e2ebf0]",
+    textClass: "text-[#4A4A4A]",
+    accentClass: "text-[#767676]",
+    subtextClass: "text-[#4A4A4A]/70",
+    darkText: true
+  },
+   {
+    id: 'citrus-splash',
+    bgClass: "bg-gradient-to-br from-[#f6d365] to-[#fda085]",
+    textClass: "text-[#6D3807]",
+    accentClass: "text-white",
+    subtextClass: "text-[#6D3807]/80",
+    darkText: true
   }
 ];
 
-export const GoldenSentencesView = ({ apiKey, text, data, onUpdate }: { apiKey: string, text: string, data: GoldenSentence[], onUpdate: (d: GoldenSentence[]) => void }) => {
+export const GoldenSentencesView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: GoldenSentence[], onUpdate: (d: GoldenSentence[]) => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
   const [activeCard, setActiveCard] = useState<{item: GoldenSentence, index: number} | null>(null);
   const hoverTimeoutRef = useRef<any>(null);
@@ -443,23 +526,28 @@ export const GoldenSentencesView = ({ apiKey, text, data, onUpdate }: { apiKey: 
         alert("图片生成失败，请重试。");
     }
   };
+  
+  const handleCopy = () => {
+      const txt = data.map(s => `${s.sentence}\n${s.translation}`).join('\n\n');
+      navigator.clipboard.writeText(txt);
+  };
 
   return (
-    <FeatureWrapper title="金句卡片" icon={Star} loading={loading} onRefresh={fetchData}>
+    <FeatureWrapper title="金句卡片" icon={Star} loading={loading} onRefresh={fetchData} onCopy={handleCopy} theme={theme}>
       {/* 1. List View */}
       <div className="flex flex-col gap-4 p-4 max-w-5xl mx-auto">
-        {data.length === 0 && <div className="text-center text-[#B0A496] font-serif">暂无金句，请刷新生成。</div>}
+        {data.length === 0 && <div className={`text-center ${theme.textSecondary} opacity-60`}>暂无金句，请刷新生成。</div>}
         {data.map((s, i) => (
-            <div key={i} className="group bg-[#F7F5F0] p-8 rounded-xl border border-[#D1C0A5] hover:shadow-lg transition-all duration-300 relative overflow-hidden">
+            <div key={i} className={`group ${theme.bgCard} p-8 rounded-xl border ${theme.border} hover:shadow-lg transition-all duration-300 relative overflow-hidden`}>
                 <div className="flex gap-6 items-start relative z-10">
-                    <div className="text-6xl font-serif text-[#EBE5CE] leading-none">“</div>
+                    <div className={`text-6xl font-serif ${theme.textSecondary} opacity-20 leading-none`}>“</div>
                     <div className="flex-1 pt-2">
-                        <p className="text-xl font-serif text-[#2C2C2C] leading-relaxed font-bold">{s.sentence}</p>
-                        <div className="mt-4 pt-4 border-t border-[#EBE5CE] flex justify-between items-center">
-                            <p className="text-[#5D7265] text-sm font-serif">{s.translation}</p>
+                        <p className={`text-xl font-bold ${theme.textMain} leading-relaxed`}>{s.sentence}</p>
+                        <div className={`mt-4 pt-4 border-t ${theme.border} flex justify-between items-center`}>
+                            <p className={`${theme.textSecondary} text-sm font-serif`}>{s.translation}</p>
                             
                             <div className="flex gap-2">
-                                <button onClick={() => handlePlay(s.sentence)} className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-[#EBE5CE] text-[#B0A496] hover:text-[#2C2C2C]" title="Play">
+                                <button onClick={() => handlePlay(s.sentence)} className={`w-8 h-8 rounded-full flex items-center justify-center hover:bg-black/5 ${theme.textSecondary} hover:text-current`} title="Play">
                                     <Volume2 size={16} />
                                 </button>
                                 
@@ -467,7 +555,7 @@ export const GoldenSentencesView = ({ apiKey, text, data, onUpdate }: { apiKey: 
                                     onMouseEnter={() => handleMouseEnter(s, i)}
                                     onMouseLeave={handleMouseLeave}
                                     onClick={() => setActiveCard({item: s, index: i})}
-                                    className="px-4 py-1 bg-[#984B43] text-[#F7F5F0] rounded text-xs font-serif font-bold hover:bg-[#7D3C35] flex items-center gap-2"
+                                    className={`px-4 py-1 ${theme.buttonStyle} rounded text-xs font-bold flex items-center gap-2`}
                                 >
                                     <Share2 size={12} /> 生成卡片
                                 </button>
@@ -481,40 +569,50 @@ export const GoldenSentencesView = ({ apiKey, text, data, onUpdate }: { apiKey: 
 
       {/* 2. Modal Overlay */}
       {activeCard && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#2C2C2C]/90 backdrop-blur-sm p-4" onClick={() => setActiveCard(null)}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-300" onClick={() => setActiveCard(null)}>
             <div className="relative h-[85vh] aspect-[9/16] max-w-md w-full flex flex-col items-center justify-center" onClick={e => e.stopPropagation()}>
                 
                 {(() => {
-                   const theme = CARD_THEMES[activeCard.index % CARD_THEMES.length];
+                   const cardTheme = RICH_CARD_THEMES[activeCard.index % RICH_CARD_THEMES.length];
                    return (
-                     <div ref={cardRef} className={`relative w-full h-full overflow-hidden rounded-xl shadow-2xl flex flex-col items-center justify-center text-center p-8 md:p-12 ${theme.bgClass} ${theme.containerStyle}`}>
-                        {/* Background */}
-                        <div className="absolute inset-0 pointer-events-none z-0">
-                            {theme.bgElement}
+                     <div ref={cardRef} className={`relative w-full h-full overflow-hidden rounded-xl shadow-2xl flex flex-col items-center justify-center text-center p-8 md:p-12 ${cardTheme.bgClass} animate-in zoom-in-95 duration-500`}>
+                        {/* Floral Decoration */}
+                        <div className={`absolute inset-0 pointer-events-none z-0 ${cardTheme.accentClass} opacity-30`}>
+                            <FloralPatterns />
                         </div>
 
-                        {/* Top Right Lotus Mark */}
-                        <div className={`absolute top-8 right-8 ${theme.accentColor} opacity-90`}>
-                             <InkLotusMark size={32} />
+                        {/* Top Right Mark (Abstract) */}
+                        <div className={`absolute top-8 right-8 ${cardTheme.accentClass} opacity-60`}>
+                             <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L14.5 9L22 9L16 14L18 21L12 17L6 21L8 14L2 9L9.5 9L12 2Z" fillOpacity="0.8"/></svg>
                         </div>
 
                         {/* Content */}
                         <div className="relative z-10 flex flex-col h-full justify-between py-12">
-                             <div className={`opacity-60 flex justify-center ${theme.accentColor}`}>
-                                <Quote size={32} className="fill-current rotate-180"/>
+                             <div className={`opacity-60 flex justify-center ${cardTheme.accentClass}`}>
+                                <Quote size={40} className="fill-current rotate-180 drop-shadow-sm"/>
                              </div>
 
-                             <div className="flex-1 flex flex-col justify-center">
-                                <h3 className={theme.quoteStyle}>
+                             <div className="flex-1 flex flex-col justify-center gap-8">
+                                <h3 className={`text-2xl md:text-3xl leading-relaxed font-bold font-serif ${cardTheme.textClass} drop-shadow-sm`}>
                                     {activeCard.item.sentence}
                                 </h3>
-                                <div className={theme.transStyle}>
+                                
+                                <div className="flex items-center gap-4 justify-center opacity-60">
+                                   <div className={`h-[1px] w-12 ${cardTheme.accentClass} bg-current`}></div>
+                                   <div className={`w-2 h-2 rounded-full ${cardTheme.accentClass} bg-current`}></div>
+                                   <div className={`h-[1px] w-12 ${cardTheme.accentClass} bg-current`}></div>
+                                </div>
+
+                                <div className={`${cardTheme.subtextClass} text-sm md:text-base font-serif leading-relaxed px-4`}>
                                     {activeCard.item.translation}
                                 </div>
                              </div>
 
-                             <div className="flex items-center justify-center gap-2 opacity-60 text-[10px] uppercase tracking-[0.4em] font-bold">
-                                <span>Reading Artifact</span>
+                             {/* Abstract Footer Decoration (No text) */}
+                             <div className="flex items-center justify-center gap-2 opacity-60">
+                                <div className={`w-1 h-1 rounded-full ${cardTheme.accentClass} bg-current`}></div>
+                                <div className={`w-1 h-1 rounded-full ${cardTheme.accentClass} bg-current`}></div>
+                                <div className={`w-1 h-1 rounded-full ${cardTheme.accentClass} bg-current`}></div>
                              </div>
                         </div>
                      </div>
@@ -522,29 +620,29 @@ export const GoldenSentencesView = ({ apiKey, text, data, onUpdate }: { apiKey: 
                 })()}
 
                 {/* External Actions */}
-                <div className="absolute -right-16 top-0 bottom-0 flex flex-col justify-center gap-4">
+                <div className="absolute -right-20 top-0 bottom-0 flex flex-col justify-center gap-6">
                      <button 
                         onClick={() => setActiveCard(null)} 
-                        className="w-10 h-10 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20"
+                        className="w-12 h-12 rounded-full bg-white/10 text-white flex items-center justify-center hover:bg-white/20 hover:rotate-90 transition-all duration-300 backdrop-blur-sm border border-white/10"
                      >
-                        <X size={18}/>
+                        <X size={20}/>
                      </button>
                      <button 
                         onClick={() => {
                             const nextIndex = activeCard.index + 1;
                             setActiveCard({...activeCard, index: nextIndex});
                         }}
-                        className="w-10 h-10 rounded-full bg-[#EBE5CE] text-[#2C2C2C] flex items-center justify-center hover:scale-110 shadow-lg"
-                        title="Change Theme"
+                        className="w-12 h-12 rounded-full bg-white text-black flex items-center justify-center hover:scale-110 shadow-xl transition-all duration-300"
+                        title="Switch Theme"
                      >
-                        <Palette size={18}/>
+                        <Palette size={20}/>
                      </button>
                      <button 
                         onClick={handleDownload}
-                        className="w-10 h-10 rounded-full bg-[#984B43] text-white flex items-center justify-center shadow-lg hover:bg-[#7D3C35] hover:scale-110" 
+                        className="w-12 h-12 rounded-full bg-emerald-500 text-white flex items-center justify-center shadow-xl hover:bg-emerald-400 hover:scale-110 transition-all duration-300" 
                         title="Download Image"
                      >
-                        <Download size={18}/>
+                        <Download size={20}/>
                      </button>
                 </div>
             </div>
@@ -560,13 +658,15 @@ export const QuizView = ({
     text, 
     type, 
     data, 
-    onUpdate 
+    onUpdate,
+    theme
 }: { 
     apiKey: string, 
     text: string, 
     type: 'EXERCISE' | 'QA', 
     data: any[],
-    onUpdate: (d: any[]) => void 
+    onUpdate: (d: any[]) => void,
+    theme: ThemeConfig
 }) => {
   const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('zh');
@@ -604,11 +704,22 @@ export const QuizView = ({
   };
 
   const LangToggle = (
-    <div className="flex bg-[#EBE5CE] rounded-lg p-1">
-        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'zh' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>中文</button>
-        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'en' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>EN</button>
+    <div className={`flex ${theme.bgBody} rounded-lg p-1 border ${theme.border}`}>
+        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'zh' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>中文</button>
+        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'en' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>EN</button>
     </div>
   );
+  
+  const handleCopy = () => {
+      const txt = data.map((item, i) => {
+          if (type === 'EXERCISE') {
+              return `${i+1}. ${item.question}\n${item.options.join('\n')}\nAnswer: ${item.correctLetter}\nExplanation: ${item.explanation}`;
+          } else {
+              return `Q: ${item.question}\nA: ${item.answer}`;
+          }
+      }).join('\n\n');
+      navigator.clipboard.writeText(txt);
+  };
 
   return (
     <FeatureWrapper 
@@ -616,39 +727,41 @@ export const QuizView = ({
       icon={type === 'EXERCISE' ? Check : MessageSquare}
       loading={loading} 
       onRefresh={fetchData}
+      onCopy={handleCopy}
       extraActions={LangToggle}
+      theme={theme}
     >
       <div className="space-y-8 max-w-5xl mx-auto pb-20 pt-8">
         
         {/* Score Header */}
         {type === 'EXERCISE' && submitted && (
-            <div className="bg-[#463F3A] text-[#F7F5F0] p-6 rounded-xl shadow-xl flex items-center justify-between mb-8">
+            <div className={`${theme.bgSidebar} text-white p-6 rounded-xl shadow-xl flex items-center justify-between mb-8`}>
                 <div>
-                    <h3 className="text-2xl font-serif font-bold mb-1">测试结果</h3>
+                    <h3 className="text-2xl font-bold mb-1">测试结果</h3>
                     <p className="opacity-60 text-sm">Review your performance</p>
                 </div>
                 <div className="text-right">
-                    <div className="text-4xl font-black font-serif">{calculateScore()}</div>
+                    <div className="text-4xl font-black">{calculateScore()}</div>
                     <div className="text-xs opacity-40 uppercase tracking-[0.3em] font-bold">Score</div>
                 </div>
             </div>
         )}
 
-        {data.length === 0 && <div className="text-center text-[#B0A496] py-12 font-serif">暂无内容，请刷新生成。</div>}
+        {data.length === 0 && <div className={`text-center ${theme.textSecondary} py-12 opacity-60`}>暂无内容，请刷新生成。</div>}
         
         {data.map((item, i) => (
-           <div key={i} className="bg-[#F7F5F0] rounded-xl p-8 shadow-sm border border-[#D1C0A5] relative overflow-hidden group">
-              <div className="absolute top-0 right-0 p-6 opacity-[0.05] font-serif text-[#463F3A] text-8xl font-black pointer-events-none">
+           <div key={i} className={`${theme.bgCard} ${theme.radius} p-8 shadow-sm border ${theme.border} relative overflow-hidden group`}>
+              <div className={`absolute top-0 right-0 p-6 opacity-[0.05] ${theme.textMain} text-8xl font-black pointer-events-none select-none`}>
                 {i+1}
               </div>
 
               {type === 'EXERCISE' ? (
                 <>
                   <div className="flex gap-4 mb-6 relative z-10">
-                    <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold font-serif shrink-0 border ${submitted ? (userAnswers[i] === item.correctLetter ? 'bg-[#5D7265] text-white border-[#5D7265]' : 'bg-[#984B43] text-white border-[#984B43]') : 'bg-[#EBE5CE] text-[#463F3A] border-[#D1C0A5]'}`}>
+                    <span className={`flex items-center justify-center w-8 h-8 rounded-full font-bold shrink-0 border ${submitted ? (userAnswers[i] === item.correctLetter ? 'bg-emerald-600 text-white border-transparent' : 'bg-red-500 text-white border-transparent') : `${theme.bgPanel} ${theme.textMain} ${theme.border}`}`}>
                         {i+1}
                     </span> 
-                    <p className="font-bold text-[#2C2C2C] text-lg leading-relaxed font-serif pt-1">{item.question}</p>
+                    <p className={`font-bold ${theme.textMain} text-lg leading-relaxed pt-1`}>{item.question}</p>
                   </div>
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6 pl-12 relative z-10">
@@ -657,20 +770,20 @@ export const QuizView = ({
                       const isSelected = userAnswers[i] === letter;
                       const isCorrect = item.correctLetter === letter;
                       
-                      let bgClass = "bg-[#FDFCF8] border-[#D1C0A5] hover:border-[#984B43]";
+                      let bgClass = `${theme.bgPanel} border ${theme.border} hover:border-current`;
                       if (submitted) {
-                          if (isCorrect) bgClass = "bg-[#5D7265]/10 border-[#5D7265] text-[#5D7265]";
-                          else if (isSelected && !isCorrect) bgClass = "bg-[#984B43]/10 border-[#984B43] text-[#984B43]";
-                          else bgClass = "opacity-50 border-[#EBE5CE]";
+                          if (isCorrect) bgClass = "bg-emerald-50 border-emerald-500 text-emerald-800";
+                          else if (isSelected && !isCorrect) bgClass = "bg-red-50 border-red-500 text-red-800";
+                          else bgClass = "opacity-50 border-transparent";
                       } else if (isSelected) {
-                          bgClass = "bg-[#463F3A] border-[#463F3A] text-[#F7F5F0]";
+                          bgClass = `${theme.bgSidebar} text-white border-transparent`;
                       }
 
                       return (
                         <div 
                             key={idx} 
                             onClick={() => !submitted && setUserAnswers(prev => ({...prev, [i]: letter}))}
-                            className={`p-4 rounded-lg text-base border transition-all flex items-center gap-3 cursor-pointer font-serif ${bgClass}`}
+                            className={`p-4 rounded-lg text-base transition-all flex items-center gap-3 cursor-pointer ${bgClass}`}
                         >
                             <span className="font-bold text-sm opacity-60">{letter}.</span>
                             {opt}
@@ -680,8 +793,8 @@ export const QuizView = ({
                   </div>
                   
                   {submitted && (
-                      <div className="ml-12 mt-4 p-4 bg-[#EBE5CE]/30 text-[#5D7265] rounded-lg border border-[#D1C0A5] text-base leading-relaxed font-serif">
-                        <strong className="block mb-1 text-[#463F3A] text-xs uppercase tracking-wider">解析</strong>
+                      <div className={`ml-12 mt-4 p-4 ${theme.bgPanel} ${theme.textSecondary} rounded-lg border ${theme.border} text-base leading-relaxed`}>
+                        <strong className={`block mb-1 ${theme.textMain} text-xs uppercase tracking-wider`}>解析</strong>
                         {item.explanation}
                       </div>
                   )}
@@ -690,14 +803,14 @@ export const QuizView = ({
                 /* QA View - Simplified */
                 <>
                   <div className="flex gap-4 items-start relative z-10">
-                    <div className="w-8 h-8 rounded-lg bg-[#463F3A] text-[#F7F5F0] flex items-center justify-center font-bold font-serif shrink-0">问</div>
+                    <div className={`w-8 h-8 rounded-lg ${theme.bgSidebar} text-white flex items-center justify-center font-bold shrink-0`}>问</div>
                     <div className="pt-1">
-                        <p className="font-bold text-[#2C2C2C] text-lg leading-relaxed font-serif">{item.question}</p>
+                        <p className={`font-bold ${theme.textMain} text-lg leading-relaxed`}>{item.question}</p>
                     </div>
                   </div>
                   <div className="flex gap-4 mt-6 items-start relative z-10">
-                     <div className="w-8 h-8 rounded-lg bg-[#EBE5CE] text-[#463F3A] flex items-center justify-center font-bold font-serif shrink-0">答</div>
-                     <div className="bg-[#FDFCF8] p-6 rounded-xl rounded-tl-none border border-[#EBE5CE] text-[#2C2C2C] leading-loose text-base w-full font-serif shadow-sm">
+                     <div className={`w-8 h-8 rounded-lg ${theme.bgPanel} ${theme.textSecondary} flex items-center justify-center font-bold shrink-0`}>答</div>
+                     <div className={`${theme.bgPanel} p-6 rounded-xl rounded-tl-none border ${theme.border} ${theme.textMain} leading-loose text-base w-full shadow-sm`}>
                         {item.answer}
                      </div>
                   </div>
@@ -710,7 +823,7 @@ export const QuizView = ({
             <div className="flex justify-center pt-8">
                 <button 
                     onClick={() => setSubmitted(true)}
-                    className="bg-[#984B43] text-[#F7F5F0] px-12 py-3 rounded-full font-bold font-serif text-lg shadow-lg hover:bg-[#7D3C35] transition-all"
+                    className={`${theme.buttonStyle} px-12 py-3 rounded-full font-bold text-lg shadow-lg hover:scale-105 transition-all`}
                 >
                     提交答案
                 </button>
@@ -722,7 +835,7 @@ export const QuizView = ({
 };
 
 // --- 7. Vocabulary View ---
-export const VocabView = ({ apiKey, text, data, onUpdate }: { apiKey: string, text: string, data: VocabItem[], onUpdate: (d: VocabItem[]) => void }) => {
+export const VocabView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: VocabItem[], onUpdate: (d: VocabItem[]) => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
 
   const fetchData = async () => {
@@ -738,12 +851,17 @@ export const VocabView = ({ apiKey, text, data, onUpdate }: { apiKey: string, te
     const audio = await generateTTS(apiKey, word, 'Puck');
     if (audio) await playPcmAudio(audio).promise;
   };
+  
+  const handleCopy = () => {
+      const txt = data.map(v => `${v.word} /${v.ipa}/ (${v.pos})\n${v.meaning}`).join('\n\n');
+      navigator.clipboard.writeText(txt);
+  };
 
   return (
-    <FeatureWrapper title="核心词汇" icon={GraduationCap} loading={loading} onRefresh={fetchData}>
-      <div className="bg-[#FDFCF8] rounded-xl shadow-sm border border-[#D1C0A5] overflow-hidden mx-auto max-w-6xl mt-4">
-        <table className="w-full text-left text-[#463F3A] font-serif">
-          <thead className="bg-[#EBE5CE] text-[#7A7067] font-bold uppercase tracking-widest text-xs border-b border-[#D1C0A5]">
+    <FeatureWrapper title="核心词汇" icon={GraduationCap} loading={loading} onRefresh={fetchData} onCopy={handleCopy} theme={theme}>
+      <div className={`${theme.bgCard} rounded-xl shadow-sm border ${theme.border} overflow-hidden mx-auto max-w-6xl mt-4`}>
+        <table className={`w-full text-left ${theme.textMain}`}>
+          <thead className={`${theme.bgPanel} ${theme.textSecondary} font-bold uppercase tracking-widest text-xs border-b ${theme.border}`}>
             <tr>
               <th className="px-8 py-4">Word</th>
               <th className="px-6 py-4">IPA</th>
@@ -752,22 +870,22 @@ export const VocabView = ({ apiKey, text, data, onUpdate }: { apiKey: string, te
               <th className="px-6 py-4 w-16"></th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-[#EBE5CE]">
+          <tbody className={`divide-y ${theme.border}`}>
             {data.map((v, i) => (
-              <tr key={i} className="hover:bg-[#F7F5F0] transition-colors group">
-                <td className="px-8 py-4 font-bold text-[#2C2C2C] text-lg">{v.word}</td>
-                <td className="px-6 py-4 font-mono text-[#5D7265] text-sm">{v.ipa}</td>
-                <td className="px-6 py-4 italic text-[#7A7067] text-sm">{v.pos}</td>
-                <td className="px-6 py-4 text-[#2C2C2C] leading-relaxed max-w-md">{v.meaning}</td>
+              <tr key={i} className={`hover:${theme.bgPanel} transition-colors group`}>
+                <td className="px-8 py-4 font-bold text-lg">{v.word}</td>
+                <td className={`px-6 py-4 font-mono ${theme.accent} text-sm opacity-80`}>{v.ipa}</td>
+                <td className={`px-6 py-4 italic ${theme.textSecondary} text-sm`}>{v.pos}</td>
+                <td className="px-6 py-4 leading-relaxed max-w-md">{v.meaning}</td>
                 <td className="px-6 py-4">
-                  <button onClick={() => handlePlay(v.word)} className="p-2 rounded-full text-[#B0A496] hover:text-[#984B43] hover:bg-[#FDFCF8] transition-all">
+                  <button onClick={() => handlePlay(v.word)} className={`p-2 rounded-full ${theme.textSecondary} hover:text-current hover:bg-black/5 transition-all`}>
                     <Volume2 size={16} />
                   </button>
                 </td>
               </tr>
             ))}
             {data.length === 0 && (
-                <tr><td colSpan={5} className="text-center py-20 text-[#B0A496] italic">暂无词汇，请刷新生成。</td></tr>
+                <tr><td colSpan={5} className={`text-center py-20 ${theme.textSecondary} italic opacity-60`}>暂无词汇，请刷新生成。</td></tr>
             )}
           </tbody>
         </table>
@@ -777,7 +895,7 @@ export const VocabView = ({ apiKey, text, data, onUpdate }: { apiKey: string, te
 };
 
 // --- 8. Action Plan ---
-export const ActionPlanView = ({ apiKey, text, data, onUpdate }: { apiKey: string, text: string, data: string | null, onUpdate: (d: string) => void }) => {
+export const ActionPlanView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: string | null, onUpdate: (d: string) => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState<'zh' | 'en'>('zh');
 
@@ -791,23 +909,61 @@ export const ActionPlanView = ({ apiKey, text, data, onUpdate }: { apiKey: strin
   };
 
   const LangToggle = (
-    <div className="flex bg-[#EBE5CE] rounded-lg p-1">
-        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'zh' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>中文</button>
-        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'en' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>EN</button>
+    <div className={`flex ${theme.bgBody} rounded-lg p-1 border ${theme.border}`}>
+        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'zh' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>中文</button>
+        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'en' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>EN</button>
     </div>
   );
+  
+  const handleCopy = () => {
+      if(data) navigator.clipboard.writeText(data);
+  };
 
   return (
-    <FeatureWrapper title="行动计划" icon={Check} loading={loading} onRefresh={fetchData} extraActions={LangToggle}>
-       <div className="bg-[#FDFCF8] p-10 rounded-xl shadow-sm border border-[#D1C0A5] max-w-5xl mx-auto mt-4 font-serif">
-         {data ? <SimpleMarkdown text={data} /> : <div className="text-[#B0A496] italic text-center py-10">暂无计划，请刷新生成...</div>}
+    <FeatureWrapper title="行动计划" icon={Check} loading={loading} onRefresh={fetchData} onCopy={handleCopy} extraActions={LangToggle} theme={theme}>
+       <div className={`${theme.bgCard} p-10 rounded-xl shadow-sm border ${theme.border} max-w-5xl mx-auto mt-4`}>
+         {data ? <SimpleMarkdown text={data} theme={theme} /> : <div className={`${theme.textSecondary} italic text-center py-10 opacity-60`}>暂无计划，请刷新生成...</div>}
       </div>
     </FeatureWrapper>
   );
 };
 
-// --- 9. Review View (Cleaned Headers) ---
-export const ReviewView = ({ apiKey, text, data, onUpdate }: { apiKey: string, text: string, data: string | null, onUpdate: (d: string) => void }) => {
+// --- 9. Beginner Guide View (New) ---
+export const BeginnerGuideView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: string | null, onUpdate: (d: string) => void, theme: ThemeConfig }) => {
+  const [loading, setLoading] = useState(false);
+  const [lang, setLang] = useState<'zh' | 'en'>('zh');
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const res = await generateBeginnerGuide(apiKey, text, lang);
+      onUpdate(res);
+    } catch (e) { console.error(e); } 
+    finally { setLoading(false); }
+  };
+
+  const LangToggle = (
+    <div className={`flex ${theme.bgBody} rounded-lg p-1 border ${theme.border}`}>
+        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'zh' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>中文</button>
+        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'en' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>EN</button>
+    </div>
+  );
+  
+  const handleCopy = () => {
+      if(data) navigator.clipboard.writeText(data);
+  };
+
+  return (
+    <FeatureWrapper title="新手拆解" icon={Baby} loading={loading} onRefresh={fetchData} onCopy={handleCopy} extraActions={LangToggle} theme={theme}>
+       <div className={`${theme.bgCard} p-10 rounded-xl shadow-sm border ${theme.border} max-w-5xl mx-auto mt-4`}>
+         {data ? <SimpleMarkdown text={data} theme={theme} /> : <div className={`${theme.textSecondary} italic text-center py-10 opacity-60`}>暂无内容，请刷新生成...</div>}
+      </div>
+    </FeatureWrapper>
+  );
+};
+
+// --- 10. Review View (Cleaned Headers) ---
+export const ReviewView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: string | null, onUpdate: (d: string) => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
   const [style, setStyle] = useState<ReviewStyle>('Standard');
   const [lang, setLang] = useState<'en' | 'zh'>('zh');
@@ -826,7 +982,7 @@ export const ReviewView = ({ apiKey, text, data, onUpdate }: { apiKey: string, t
       <select 
         value={style} 
         onChange={(e) => setStyle(e.target.value as ReviewStyle)}
-        className="bg-[#EBE5CE] text-[#463F3A] text-sm rounded px-3 py-1 border border-[#D1C0A5] focus:ring-1 focus:ring-[#984B43] outline-none font-serif"
+        className={`${theme.bgBody} ${theme.textMain} text-sm rounded px-3 py-1 border ${theme.border} focus:ring-1 focus:ring-current outline-none`}
       >
         <option value="Standard">标准风格</option>
         <option value="Nietzsche">尼采哲学式</option>
@@ -839,12 +995,16 @@ export const ReviewView = ({ apiKey, text, data, onUpdate }: { apiKey: string, t
         <option value="Poetic">散文诗歌式</option>
         <option value="Journalistic">新闻纪实式</option>
       </select>
-       <div className="flex bg-[#EBE5CE] rounded-lg p-1">
-        <button onClick={() => setLang('zh')} className={`px-3 py-1 rounded text-xs font-bold font-serif transition-all ${lang === 'zh' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>中</button>
-        <button onClick={() => setLang('en')} className={`px-3 py-1 rounded text-xs font-bold font-serif transition-all ${lang === 'en' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>En</button>
+       <div className={`flex ${theme.bgBody} rounded-lg p-1 border ${theme.border}`}>
+        <button onClick={() => setLang('zh')} className={`px-3 py-1 rounded text-xs font-bold transition-all ${lang === 'zh' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>中</button>
+        <button onClick={() => setLang('en')} className={`px-3 py-1 rounded text-xs font-bold transition-all ${lang === 'en' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>En</button>
        </div>
     </div>
   );
+  
+  const handleCopy = () => {
+      if(data) navigator.clipboard.writeText(data);
+  };
 
   return (
     <FeatureWrapper 
@@ -852,23 +1012,23 @@ export const ReviewView = ({ apiKey, text, data, onUpdate }: { apiKey: string, t
       icon={Feather}
       loading={loading} 
       onRefresh={fetchData} 
+      onCopy={handleCopy}
       extraActions={Controls}
+      theme={theme}
     >
       {!data && !loading ? (
-        <div className="flex flex-col items-center justify-center h-full text-[#B0A496] min-h-[400px]">
-           <Feather size={48} className="mb-4 opacity-20 text-[#463F3A]" />
-           <p className="font-serif">请选择一种风格，点击“刷新”生成书评。</p>
+        <div className={`flex flex-col items-center justify-center h-full ${theme.textSecondary} min-h-[400px]`}>
+           <Feather size={48} className="mb-4 opacity-20" />
+           <p>请选择一种风格，点击“刷新”生成书评。</p>
         </div>
       ) : (
-        <div className="max-w-4xl mx-auto bg-[#FDFCF8] p-12 rounded-xl shadow-sm border border-[#D1C0A5] relative overflow-hidden mt-4">
-           {/* Removed redundant header text here */}
-           
+        <div className={`max-w-4xl mx-auto ${theme.bgCard} p-12 rounded-xl shadow-sm border ${theme.border} relative overflow-hidden mt-4`}>
            <div className="relative z-10">
-                <SimpleMarkdown text={data || ''} />
+                <SimpleMarkdown text={data || ''} theme={theme} />
            </div>
            
-           <div className="mt-16 pt-8 border-t border-[#EBE5CE] flex justify-center text-[#B0A496]">
-              <div className="w-1.5 h-1.5 rounded-full bg-[#D1C0A5]"></div>
+           <div className={`mt-16 pt-8 border-t ${theme.border} flex justify-center ${theme.textSecondary}`}>
+              <div className="w-1.5 h-1.5 rounded-full bg-current opacity-50"></div>
            </div>
         </div>
       )}
@@ -876,24 +1036,34 @@ export const ReviewView = ({ apiKey, text, data, onUpdate }: { apiKey: string, t
   );
 };
 
-// --- 10. Podcast View (Cleaned Headers) ---
-export const PodcastView = ({ apiKey, text, data, onUpdate }: { apiKey: string, text: string, data: PodcastScriptLine[], onUpdate: (d: PodcastScriptLine[]) => void }) => {
+// --- 11. Podcast View (Cleaned Headers) ---
+export const PodcastView = ({ apiKey, text, data, onUpdate, theme }: { apiKey: string, text: string, data: PodcastScriptLine[], onUpdate: (d: PodcastScriptLine[]) => void, theme: ThemeConfig }) => {
   const [loading, setLoading] = useState(false);
   const [lang, setLang] = useState<'en' | 'zh'>('zh');
   
   // Audio State
   const [isPlaying, setIsPlaying] = useState(false);
   const [playingLine, setPlayingLine] = useState<number | null>(null);
+  const [autoPlayTrigger, setAutoPlayTrigger] = useState(false);
   const audioControllerRef = useRef<AudioController | null>(null);
 
   const fetchData = async () => {
     setLoading(true);
+    setAutoPlayTrigger(true); // Set trigger for auto-play
     try {
       const res = await generatePodcastScript(apiKey, text, lang);
       onUpdate(res);
     } catch (e) { console.error(e); } 
     finally { setLoading(false); }
   };
+
+  // Auto-play effect
+  useEffect(() => {
+    if (!loading && data.length > 0 && autoPlayTrigger && !isPlaying) {
+      playFullPodcast();
+      setAutoPlayTrigger(false);
+    }
+  }, [loading, data, autoPlayTrigger]);
 
   const playFullPodcast = async () => {
     setIsPlaying(true);
@@ -936,9 +1106,9 @@ export const PodcastView = ({ apiKey, text, data, onUpdate }: { apiKey: string, 
   };
 
   const LangToggle = (
-    <div className="flex bg-[#EBE5CE] rounded-lg p-1">
-        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'zh' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>中文</button>
-        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold font-serif transition-all ${lang === 'en' ? 'bg-[#FDFCF8] shadow text-[#2C2C2C]' : 'text-[#7A7067]'}`}>EN</button>
+    <div className={`flex ${theme.bgBody} rounded-lg p-1 border ${theme.border}`}>
+        <button onClick={() => setLang('zh')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'zh' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>中文</button>
+        <button onClick={() => setLang('en')} className={`px-4 py-1 rounded text-sm font-bold transition-all ${lang === 'en' ? `${theme.bgCard} shadow ${theme.textMain}` : `${theme.textSecondary} opacity-60`}`}>EN</button>
     </div>
   );
 
@@ -949,17 +1119,18 @@ export const PodcastView = ({ apiKey, text, data, onUpdate }: { apiKey: string, 
       loading={loading} 
       onRefresh={fetchData}
       extraActions={LangToggle}
+      theme={theme}
     >
-      <div className="flex flex-col h-full bg-[#FDFCF8] rounded-xl shadow-sm border border-[#D1C0A5] overflow-hidden relative mt-4">
+      <div className={`flex flex-col h-full ${theme.bgCard} rounded-xl shadow-sm border ${theme.border} overflow-hidden relative mt-4`}>
          
          {/* Top Control Bar */}
-         <div className="p-6 border-b border-[#EBE5CE] flex flex-col md:flex-row items-center justify-between gap-6 bg-[#F7F5F0]">
+         <div className={`p-6 border-b ${theme.border} flex flex-col md:flex-row items-center justify-between gap-6 ${theme.bgPanel}`}>
             <div className="flex items-center gap-4">
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${data.length > 0 ? 'bg-[#463F3A] text-[#F7F5F0]' : 'bg-[#EBE5CE] text-[#B0A496]'}`}>
+                <div className={`w-12 h-12 rounded-full flex items-center justify-center ${data.length > 0 ? theme.buttonStyle : `${theme.bgBody} ${theme.textSecondary}`}`}>
                     <Mic size={20} />
                 </div>
                 <div>
-                   <h3 className="font-bold text-[#2C2C2C] text-lg font-serif">Deep Dive Podcast</h3>
+                   <h3 className={`font-bold ${theme.textMain} text-lg`}>Deep Dive Podcast</h3>
                 </div>
             </div>
 
@@ -968,7 +1139,7 @@ export const PodcastView = ({ apiKey, text, data, onUpdate }: { apiKey: string, 
                     <button 
                         onClick={fetchData}
                         disabled={loading}
-                        className="flex items-center gap-2 px-6 py-2 bg-[#984B43] text-white rounded-full font-serif font-bold shadow hover:bg-[#7D3C35] transition-all"
+                        className={`flex items-center gap-2 px-6 py-2 ${theme.buttonStyle} rounded-full font-bold shadow hover:opacity-90 transition-all`}
                     >
                         {loading ? <Loader2 size={16} className="animate-spin"/> : <Zap size={16}/>}
                         生成脚本
@@ -976,7 +1147,7 @@ export const PodcastView = ({ apiKey, text, data, onUpdate }: { apiKey: string, 
                 ) : (
                     <button 
                         onClick={togglePause}
-                        className={`group flex items-center gap-3 px-6 py-2 rounded-full font-bold font-serif shadow transition-all ${isPlaying ? 'bg-[#463F3A] text-[#F7F5F0]' : 'bg-[#984B43] text-[#F7F5F0] hover:bg-[#7D3C35]'}`}
+                        className={`group flex items-center gap-3 px-6 py-2 rounded-full font-bold shadow transition-all ${isPlaying ? `${theme.bgSidebar} text-white` : theme.buttonStyle}`}
                     >
                         {isPlaying ? (
                             <><Pause size={16} className="fill-current" /> 暂停</>
@@ -989,20 +1160,20 @@ export const PodcastView = ({ apiKey, text, data, onUpdate }: { apiKey: string, 
          </div>
 
          {/* Content Area */}
-         <div className="flex-1 space-y-6 overflow-y-auto px-10 py-10 custom-scrollbar bg-[#FDFCF8]">
+         <div className={`flex-1 space-y-6 overflow-y-auto px-10 py-10 custom-scrollbar ${theme.bgCard}`}>
             {data.length === 0 && !loading && (
-                <div className="h-full flex flex-col items-center justify-center text-[#B0A496] opacity-60">
+                <div className={`h-full flex flex-col items-center justify-center ${theme.textSecondary} opacity-60`}>
                     <Mic size={48} className="mb-4" strokeWidth={1}/>
-                    <p className="text-lg font-serif">点击上方按钮，开始生成播客。</p>
+                    <p className="text-lg">点击上方按钮，开始生成播客。</p>
                 </div>
             )}
 
             {data.map((line, i) => (
                 <div key={i} className={`flex gap-4 ${line.speaker === 'Guest' ? 'flex-row-reverse' : ''} transition-all duration-500 ${playingLine !== null && playingLine !== i ? 'opacity-30 blur-[1px]' : 'opacity-100 scale-100'}`}>
-                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-[#F7F5F0] text-sm shrink-0 shadow ${line.speaker === 'Host' ? 'bg-[#463F3A]' : 'bg-[#984B43]'}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-white text-sm shrink-0 shadow ${line.speaker === 'Host' ? theme.bgSidebar : theme.accent}`}>
                         {line.speaker === 'Host' ? 'H' : 'G'}
                     </div>
-                    <div className={`p-6 rounded-xl max-w-[80%] text-lg leading-relaxed shadow-sm border font-serif ${line.speaker === 'Host' ? 'bg-[#F7F5F0] text-[#2C2C2C] rounded-tl-none border-[#EBE5CE]' : 'bg-[#EBE5CE] text-[#463F3A] rounded-tr-none border-[#D1C0A5]'}`}>
+                    <div className={`p-6 rounded-xl max-w-[80%] text-lg leading-relaxed shadow-sm border ${line.speaker === 'Host' ? `${theme.bgPanel} ${theme.textMain} rounded-tl-none ${theme.border}` : `${theme.bgBody} ${theme.textMain} rounded-tr-none ${theme.border}`}`}>
                         <div className="font-bold text-[10px] opacity-40 mb-2 uppercase tracking-wider flex items-center gap-2">
                           {line.speaker === 'Host' ? 'Host' : 'Guest'}
                           {playingLine === i && isPlaying && <div className="w-1.5 h-1.5 rounded-full bg-current animate-pulse"></div>}

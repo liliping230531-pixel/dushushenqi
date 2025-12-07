@@ -78,8 +78,9 @@ export const generateGoldenSentences = async (apiKey: string, text: string): Pro
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
     contents: `Extract 5 profound, artistic, or philosophically significant "Golden Sentences" from the text. 
-    Avoid simple or functional sentences. 
-    Return JSON array: [{ "sentence": "...", "translation": "Chinese translation...", "id": "1" }]. Text: ${text.slice(0, 15000)}`,
+    Avoid simple or functional sentences.
+    Important: If the text is in Chinese, convert Traditional Chinese to Simplified Chinese for both the extraction and translation fields.
+    Return JSON array: [{ "sentence": "...", "translation": "Meaning or translation (Simplified Chinese)...", "id": "1" }]. Text: ${text.slice(0, 15000)}`,
     config: { responseMimeType: 'application/json' }
   });
   return cleanAndParseJson(response.text || "[]", []);
@@ -130,6 +131,19 @@ export const generateActionPlan = async (apiKey: string, text: string, lang: 'en
   const prompt = lang === 'en'
     ? "Create a practical 7-day action plan based on the principles in this text. Go STRAIGHT to Day 1. No intro, no summary, no fluff."
     : "根据文中的原则制定一个切实可行的7天行动计划。直接列出计划（Day 1...），不要写任何前言、总结或多余的废话。";
+
+  const response = await ai.models.generateContent({
+    model: 'gemini-2.5-flash',
+    contents: `${prompt} Use Markdown format. Text: ${text.slice(0, 10000)}`,
+  });
+  return response.text || "";
+};
+
+export const generateBeginnerGuide = async (apiKey: string, text: string, lang: 'en' | 'zh' = 'zh'): Promise<string> => {
+  const ai = getAI(apiKey);
+  const prompt = lang === 'en'
+    ? "Explain the core concepts and logic of this text in the simplest terms possible, like telling a story to a beginner or a 5-year-old. Use simple analogies and avoid jargon."
+    : "请用最通俗易懂的语言，像给新手或5岁孩子讲故事一样，拆解这篇文章的核心概念和逻辑。使用简单的比喻，避免专业术语。";
 
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',

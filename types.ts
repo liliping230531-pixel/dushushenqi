@@ -1,3 +1,4 @@
+
 export enum FeatureType {
   SUMMARY = 'SUMMARY',
   BILINGUAL = 'BILINGUAL',
@@ -7,6 +8,7 @@ export enum FeatureType {
   VOCABULARY = 'VOCABULARY',
   ACTION_PLAN = 'ACTION_PLAN',
   BOOK_REVIEW = 'BOOK_REVIEW',
+  BEGINNER_GUIDE = 'BEGINNER_GUIDE',
   PODCAST = 'PODCAST',
 }
 
@@ -79,5 +81,29 @@ export interface AnalysisData {
   vocabulary: VocabItem[];
   actionPlan: string | null;
   review: string | null;
+  beginnerGuide: string | null;
   podcastScript: PodcastScriptLine[];
+}
+
+export type ThemeId = 'song' | 'modern' | 'cyber' | 'journal' | 'magazine' | 'candy' | 'forest' | 'sunset' | 'ocean';
+
+export interface ThemeConfig {
+  id: ThemeId;
+  name: string;
+  // Colors (Tailwind classes or hex)
+  bgBody: string;
+  bgPanel: string;
+  bgSidebar: string;
+  bgCard: string;
+  textMain: string;
+  textSecondary: string;
+  accent: string;
+  border: string;
+  // Styles
+  fontMain: string; // font-serif, font-sans, font-mono
+  radius: string; // rounded-xl, rounded-none
+  shadow: string;
+  // Specifics
+  textureOverlay?: string; // CSS url
+  buttonStyle: string;
 }
