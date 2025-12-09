@@ -12,27 +12,30 @@ import {
   Baby, // For Beginner Guide
 } from 'lucide-react';
 
-// Theme-aware Lotus Icon
+// Theme-aware Lotus Icon (Replica of the specific 7-petal design provided)
 const ThemedLotusIcon = ({ size = 24, className = "" }) => (
   <svg 
     width={size} 
     height={size} 
     viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="1.2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
+    fill="currentColor" 
     className={className}
+    xmlns="http://www.w3.org/2000/svg"
   >
-     <path d="M12 20c-1-3-1-6-1-9 0-3 1-5 1-5s1 2 1 5c0 3 0 6-1 9z" fill="currentColor" fillOpacity="0.1"/>
-     <path d="M12 11c-2 2-5 3-5 6s3 2 5 2" />
-     <path d="M12 11c2 2 5 3 5 6s-3 2-5 2" />
-     <path d="M12 14c-4-2-7-6-3-10 2 2 2 5 3 10z" />
-     <path d="M12 14c4-2 7-6 3-10-2 2-2 5-3 10z" />
-     <path d="M7 16c-3-2-2-5 1-6" />
-     <path d="M17 16c3-2 2-5-1-6" />
-     <path d="M12 20v2" />
+     {/* Center Petal */}
+     <path d="M12 2.5C12 2.5 16 9 16 13.5C16 16.5 12 18 12 18C12 18 8 16.5 8 13.5C8 9 12 2.5 12 2.5Z" />
+     
+     {/* Inner Side Petals */}
+     <path d="M7 6.5C7 6.5 10 13 11.2 16.2C11.2 16.2 7 15 5 11.5C4.2 10 7 6.5 7 6.5Z" />
+     <path d="M17 6.5C17 6.5 14 13 12.8 16.2C12.8 16.2 17 15 19 11.5C19.8 10 17 6.5 17 6.5Z" />
+     
+     {/* Outer Side Petals */}
+     <path d="M4 10.5C4 10.5 7 15.5 10.5 17.5C10.5 17.5 5 16.5 2.5 14C1.5 13 4 10.5 4 10.5Z" />
+     <path d="M20 10.5C20 10.5 17 15.5 13.5 17.5C13.5 17.5 19 16.5 21.5 14C22.5 13 20 10.5 20 10.5Z" />
+     
+     {/* Base Swooshes */}
+     <path d="M2 16C2 16 6 20.5 12 21.5C12 21.5 6.5 20 3.5 18C2.5 17.5 2 16 2 16Z" />
+     <path d="M22 16C22 16 18 20.5 12 21.5C12 21.5 17.5 20 20.5 18C21.5 17.5 22 16 22 16Z" />
   </svg>
 );
 
@@ -73,8 +76,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ currentFeature, onSelect, hasF
         
         {/* Brand Area */}
         <div className={`p-8 pb-6 relative z-10 flex flex-col items-center border-b ${isDarkSidebar ? 'border-white/10' : 'border-black/5'}`}>
-             <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-4 border-2 ${theme.border} ${theme.bgCard} ${theme.textMain}`}>
-                <ThemedLotusIcon size={32} />
+             <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow-lg mb-4 border-2 ${theme.border} ${theme.bgCard} ${theme.textMain} p-3`}>
+                <ThemedLotusIcon size={48} />
              </div>
              <h1 className={`font-bold text-2xl tracking-[0.2em] ${isDarkSidebar ? 'text-white' : theme.textMain}`}>读书神器</h1>
              <div className={`mt-2 text-[10px] tracking-widest uppercase opacity-60 ${isDarkSidebar ? 'text-white' : theme.textSecondary}`}>AI Reader</div>

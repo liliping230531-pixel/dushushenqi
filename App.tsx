@@ -194,7 +194,7 @@ export const App: React.FC = () => {
   const [loadingStep, setLoadingStep] = useState<string>('');
   
   // Theme State
-  const [currentThemeId, setCurrentThemeId] = useState<ThemeId>('song');
+  const [currentThemeId, setCurrentThemeId] = useState<ThemeId>('candy');
   const [isThemeMenuOpen, setIsThemeMenuOpen] = useState(false);
   const theme = THEMES[currentThemeId];
 
