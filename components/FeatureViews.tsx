@@ -86,31 +86,83 @@ const FloralPatterns = ({ className = "" }) => (
     </div>
 );
 
-// Helper: Simple Markdown Renderer
+// Helper for bold parsing to avoid repetition
+const parseBold = (text: string, theme: ThemeConfig) => {
+    const parts = text.split(/(\*\*.*?\*\*)/g);
+    return parts.map((part, idx) => {
+        if (part.startsWith('**') && part.endsWith('**')) {
+            return <strong key={idx} className={`font-bold ${theme.accent} opacity-100 px-1`}>{part.slice(2, -2)}</strong>;
+        }
+        return part;
+    });
+};
+
+// Helper: Improved Simple Markdown Renderer
 const SimpleMarkdown = ({ text, theme }: { text: string, theme: ThemeConfig }) => {
     if (!text) return null;
     return (
         <div className={`prose max-w-none ${theme.textMain} leading-loose ${theme.fontMain}`}>
             {text.split('\n').map((line, i) => {
                 const cleanLine = line.trim();
-                if (!cleanLine) return <br key={i}/>;
+                if (!cleanLine) return <br key={i} className="mb-2"/>;
                 
-                if (cleanLine.startsWith('###')) return <h3 key={i} className={`text-xl font-bold mt-8 mb-4 ${theme.textSecondary} tracking-tight border-l-4 pl-3 border-current`}>{cleanLine.replace(/^###\s*/, '')}</h3>;
-                if (cleanLine.startsWith('##')) return <h2 key={i} className={`text-2xl font-bold mt-10 mb-5 ${theme.textMain} border-b ${theme.border} pb-2`}>{cleanLine.replace(/^##\s*/, '')}</h2>;
-                if (cleanLine.startsWith('#')) return <h1 key={i} className={`text-3xl font-black mt-12 mb-8 ${theme.textMain}`}>{cleanLine.replace(/^#\s*/, '')}</h1>;
+                // Headers
+                if (cleanLine.startsWith('###')) {
+                    return (
+                        <h3 key={i} className={`text-xl font-bold mt-8 mb-4 ${theme.textSecondary} tracking-tight flex items-center gap-2`}>
+                            {theme.id !== 'modern' && <span className={`w-1.5 h-6 rounded-full ${theme.bgSidebar} opacity-70`}></span>}
+                            {cleanLine.replace(/^###\s*/, '')}
+                        </h3>
+                    );
+                }
+                if (cleanLine.startsWith('##')) {
+                    return (
+                        <h2 key={i} className={`text-2xl font-bold mt-10 mb-6 ${theme.textMain} border-b ${theme.border} pb-3`}>
+                            {cleanLine.replace(/^##\s*/, '')}
+                        </h2>
+                    );
+                }
+                if (cleanLine.startsWith('#')) {
+                    return (
+                        <h1 key={i} className={`text-3xl font-black mt-12 mb-8 ${theme.textMain} text-center`}>
+                            {cleanLine.replace(/^#\s*/, '')}
+                        </h1>
+                    );
+                }
+
+                // Blockquote
+                if (cleanLine.startsWith('> ')) {
+                     return (
+                         <div key={i} className={`pl-6 border-l-4 ${theme.border} ${theme.textSecondary} italic mb-6 py-2 bg-black/5 rounded-r-lg`}>
+                             {cleanLine.replace(/^>\s*/, '')}
+                         </div>
+                     )
+                }
                 
+                // Bullet List
                 if (cleanLine.startsWith('- ') || cleanLine.startsWith('* ')) {
                     return (
-                        <div key={i} className="flex gap-4 ml-2 mb-3 items-start group">
-                            <span className={`mt-2 w-1.5 h-1.5 rounded-full ${theme.id === 'cyber' ? 'bg-[#00F0FF]' : 'bg-current'} shrink-0 text-current opacity-60`}></span>
-                            <span className="opacity-90">{cleanLine.replace(/^[-*]\s*/, '')}</span>
+                        <div key={i} className="flex gap-3 ml-2 mb-3 items-start group">
+                            <span className={`mt-2.5 w-1.5 h-1.5 rounded-full ${theme.id === 'cyber' ? 'bg-[#00F0FF]' : 'bg-current'} shrink-0 text-current opacity-60`}></span>
+                            <span className="opacity-90 leading-relaxed">{parseBold(cleanLine.replace(/^[-*]\s*/, ''), theme)}</span>
                         </div>
                     );
                 }
 
+                // Numbered List
+                const numMatch = cleanLine.match(/^(\d+)\.\s+(.*)/);
+                if (numMatch) {
+                    return (
+                        <div key={i} className="flex gap-3 ml-2 mb-3 items-start group">
+                            <span className={`font-bold ${theme.textSecondary} shrink-0 min-w-[1.5rem] text-right`}>{numMatch[1]}.</span>
+                            <span className="opacity-90 leading-relaxed">{parseBold(numMatch[2], theme)}</span>
+                        </div>
+                    )
+                }
+
                 const parts = cleanLine.split(/(\*\*.*?\*\*)/g);
                 return (
-                    <p key={i} className="mb-5 text-justify">
+                    <p key={i} className="mb-4 text-justify leading-8">
                         {parts.map((part, idx) => {
                             if (part.startsWith('**') && part.endsWith('**')) {
                                 return <strong key={idx} className={`font-bold ${theme.accent} opacity-90 px-1 rounded`}>{part.slice(2, -2)}</strong>;
@@ -921,7 +973,7 @@ export const ActionPlanView = ({ apiKey, text, data, onUpdate, theme }: { apiKey
 
   return (
     <FeatureWrapper title="行动计划" icon={Check} loading={loading} onRefresh={fetchData} onCopy={handleCopy} extraActions={LangToggle} theme={theme}>
-       <div className={`${theme.bgCard} p-10 rounded-xl shadow-sm border ${theme.border} max-w-5xl mx-auto mt-4`}>
+       <div className={`${theme.bgCard} p-10 rounded-xl shadow-sm border ${theme.border} max-w-5xl mx-auto mt-4 min-h-[50vh]`}>
          {data ? <SimpleMarkdown text={data} theme={theme} /> : <div className={`${theme.textSecondary} italic text-center py-10 opacity-60`}>暂无计划，请刷新生成...</div>}
       </div>
     </FeatureWrapper>
@@ -955,7 +1007,7 @@ export const BeginnerGuideView = ({ apiKey, text, data, onUpdate, theme }: { api
 
   return (
     <FeatureWrapper title="新手拆解" icon={Baby} loading={loading} onRefresh={fetchData} onCopy={handleCopy} extraActions={LangToggle} theme={theme}>
-       <div className={`${theme.bgCard} p-10 rounded-xl shadow-sm border ${theme.border} max-w-5xl mx-auto mt-4`}>
+       <div className={`${theme.bgCard} p-10 rounded-xl shadow-sm border ${theme.border} max-w-5xl mx-auto mt-4 min-h-[50vh]`}>
          {data ? <SimpleMarkdown text={data} theme={theme} /> : <div className={`${theme.textSecondary} italic text-center py-10 opacity-60`}>暂无内容，请刷新生成...</div>}
       </div>
     </FeatureWrapper>
